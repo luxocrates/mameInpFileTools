@@ -9,6 +9,7 @@ import {
   OFFS_RESERVED,
   OFFS_SYSNAME,
   OFFS_END,
+  RECSPEEDMODIFER,
 } from "./header.mjs";
 
 function decompressFrames(fileBuffer) {
@@ -16,14 +17,22 @@ function decompressFrames(fileBuffer) {
 }
 
 function frameSizeForPorts(ports) {
-  // Each frame structure has a 16-byte header, then two u32's for each port
-  return 16 + (ports * 8);
+  // Each frame structure has a 16-byte header.
+  // Digital inputs are typically u32s but Analogue inputs can be single byte values.
+  // In order to support all ROM sets, stick with single byte size for each port.
+  return 16 + ports;
 }
 
 function timestampFromFrameBuffer(buffer) {
   const secs = buffer.readUInt32LE(0);
   const attos = buffer.readBigUInt64LE(4);
   return BigInt(secs) * 1000000000000000000n + attos;
+}
+
+function timestampSpeedFromFrameBuffer(buffer) {
+  return {
+    timestamp: timestampFromFrameBuffer(buffer),
+    speed: buffer.readUInt32LE(12) };
 }
 
 /**
@@ -46,12 +55,14 @@ function guessNumPorts(framesBuffer) {
     let fail = false;
 
     for (let frame = 0; frame < 5; frame++) {
+
       const frameBuffer = framesBuffer.subarray(
         frame * portSize,
         ((frame + 1) * portSize)
       );
 
       const timestamp = timestampFromFrameBuffer(frameBuffer);
+      const timestampSpeed = timestampSpeedFromFrameBuffer(frameBuffer);
 
       // We could do better than this, for example checking that there's a
       // constant delta between frames, and we could check that the default
@@ -59,6 +70,11 @@ function guessNumPorts(framesBuffer) {
       if (timestamp <= lastTimestamp) {
         fail = true;
         break;
+      }
+      // The first 16 frames are exactly a % speed of 100.
+      if (timestampSpeed.speed / RECSPEEDMODIFER !== 100) {
+      	fail = true;
+      	break;
       }
 
       lastTimestamp = timestamp;
@@ -76,8 +92,8 @@ function decodeFrameBuffer(frameBuffer, numPorts) {
     speed: frameBuffer.readUInt32LE(12),
     ports: new Array(numPorts).fill(0).map(
       (_, i) => ({
-        default: portsBuffer.readUInt32LE((i * 8) + 0),
-        value: portsBuffer.readUInt32LE((i * 8) + 4),
+	// Single bytes due to analogue inputs.
+        value: portsBuffer.readUInt8(i),
       })
     ),
   }

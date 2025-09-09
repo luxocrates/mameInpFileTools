@@ -16,19 +16,22 @@ import { encodeToInpBuffer } from "./encode.mjs";
 
 function bublToBobl(frame) {
   // It's not a comprehensive set, but it does what I need it to...
-  const left   = Boolean(frame.ports[3].value &  1);
-  const right  = Boolean(frame.ports[3].value &  2);
-  const coin1  = Boolean(frame.ports[2].value &  4);
-  const jump   = Boolean(frame.ports[3].value & 16);
-  const bubble = Boolean(frame.ports[3].value & 32);
-  const start1 = Boolean(frame.ports[3].value & 64);
+  // 2025-06-14: Original code expected 32-bit words but current implementation works on 8-bits.
+  //   so quickly hacked the possibles but haven't checked anything. - Barthax.
+  const left   = Boolean(frame.ports[3*4].value &  1);
+  const right  = Boolean(frame.ports[3*4].value &  2);
+  const coin1  = Boolean(frame.ports[2*4].value &  4);
+  const jump   = Boolean(frame.ports[3*4].value & 16);
+  const bubble = Boolean(frame.ports[3*4].value & 32);
+  const start1 = Boolean(frame.ports[3*4].value & 64);
 
   return {
     ...frame,
     ports: [
-      { default: 254, value: 0 },
-      { default:  63, value: 0 },
-      { default: 243, value: 0
+    	// 2025-06-14: Change the original .default to .value & add the other 24-bits. - Barthax.
+      { value: 254},{ value: 0 },{ value: 0 },{ value: 0 },
+      { value:  63},{ value: 0 },{ value: 0 },{ value: 0 },
+      { value: 243},{ value: 0 },{ value: 0 },{ value: 0 },
         | (left   ?  1 : 0)
         | (right  ?  2 : 0)
         | (coin1  ?  8 : 0)

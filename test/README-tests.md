@@ -9,6 +9,8 @@ This directory contains data for testing of the mameInpFileTools sources:
 * `bobbled_gold.inp`
   * expected output from running `bobbler.mjs` on `unwrinkled-gold.inp`
 
+* `calspeed-analogue.inp`
+  * sample of an analogue game: California Speed.
 
 Right now, testing is manual. It’d look something like this:
 

@@ -39,9 +39,8 @@ export function encodeToInpBuffer(obj) {
 
       const portsBuffers = ports.map(
         (port) => {
-          const portBuffer = Buffer.from(new Array(8).fill(0));
-          portBuffer.writeUInt32LE(port.default, 0);
-          portBuffer.writeUInt32LE(port.value, 4);
+          const portBuffer = Buffer.from(new Array(1).fill(0));
+          portBuffer.writeUInt8(port.value);
           return portBuffer;
         }
       );

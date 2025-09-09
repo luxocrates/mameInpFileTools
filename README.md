@@ -41,8 +41,15 @@ incompatible game.
 ## Compatibility
 
 * `.inp` files tested on MAME v0.269, under macOS
+* `.inp` v3.0 (standard MAME) and v3.5 (WolfMAME) files tested from a variety of MAME versions 0.183 and beyond, under Linux - Barthax.
 * JavaScript tested on Node.js v18.15.0
+* JavaScript tested on Node.js v20.19.2 - Barthax.
 
+## Conversion to CSV
+
+inptool: point the tool at an INP file and a pair of files will be produced from it:
+- a CSV file with each frame extracted as numbers.
+- a TXT file with the header information and a sum of the number of different frames at each speed.
 
 ## License
 
